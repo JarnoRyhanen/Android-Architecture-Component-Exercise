@@ -57,7 +57,7 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
             priority = itemView.findViewById(R.id.note_item_text_view_priority);
 
             itemView.setOnClickListener(v -> {
-                int position = getAdapterPosition();
+                int position = getBindingAdapterPosition();
                 if (listener != null && position != RecyclerView.NO_POSITION) {
                     listener.onItemClick(noteObjectList.get(position));
                 }
