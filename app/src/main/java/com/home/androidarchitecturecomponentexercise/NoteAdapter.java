@@ -39,6 +39,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteHolder> {
         this.noteObjectList = noteObjects;
         notifyDataSetChanged();
     }
+    public NoteObject getNoteAtPosition(int position){
+        return noteObjectList.get(position);
+    }
 
     class NoteHolder extends RecyclerView.ViewHolder {
 
