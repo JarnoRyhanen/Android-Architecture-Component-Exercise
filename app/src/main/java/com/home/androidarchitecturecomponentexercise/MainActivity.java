@@ -2,6 +2,7 @@ package com.home.androidarchitecturecomponentexercise;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -37,12 +38,24 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        buildRecyclerView();
-        createViewModel();
-
         addNote = findViewById(R.id.main_activity_fab);
         addNote.setOnClickListener(onClickListener);
 
+        buildRecyclerView();
+        createViewModel();
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                noteViewModel.delete(adapter.getNoteAtPosition(viewHolder.getAdapterPosition()));
+                Toast.makeText(MainActivity.this, "Note deleted", Toast.LENGTH_SHORT).show();
+            }
+        }).attachToRecyclerView(recyclerView);
         intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -73,19 +86,6 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(this, "Note not saved", Toast.LENGTH_SHORT).show();
                     }
                 });
-
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                noteViewModel.delete(adapter.getNoteAtPosition(viewHolder.getAdapterPosition()));
-                Toast.makeText(MainActivity.this, "Note deleted", Toast.LENGTH_SHORT).show();
-            }
-        }).attachToRecyclerView(recyclerView);
     }
 
     private void createViewModel() {
@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(List<NoteObject> noteObjects) {
                 adapter.setNotes(noteObjects);
+                Log.d(TAG, "onChanged: " + noteObjects.size());
             }
         });
     }

@@ -46,6 +46,8 @@ dependencies {
 //    implementation 'com.google.android.material:material-rc01'
     implementation 'androidx.cardview:cardview'
 
+    implementation "androidx.recyclerview:recyclerview:1.2.1"
+
     implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
