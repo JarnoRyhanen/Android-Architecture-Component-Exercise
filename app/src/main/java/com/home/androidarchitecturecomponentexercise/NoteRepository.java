@@ -9,8 +9,8 @@ import java.util.List;
 
 public class NoteRepository {
 
-    private NoteDao noteDao;
-    private LiveData<List<NoteObject>> allNotes;
+    private final NoteDao noteDao;
+    private final LiveData<List<NoteObject>> allNotes;
 
     public NoteRepository(Application application) {
         NoteDatabase noteDatabase = NoteDatabase.getInstance(application);
