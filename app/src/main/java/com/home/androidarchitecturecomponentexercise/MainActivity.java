@@ -23,7 +23,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    public static final int ADD_NOTE_REQUEST = 1;
 
     public static final String TAG = "MainActivity";
 
@@ -47,14 +46,29 @@ public class MainActivity extends AppCompatActivity {
         intentActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        String title = result.getData().getStringExtra(IntentExtras.EXTRA_TITLE);
-                        String description = result.getData().getStringExtra(IntentExtras.EXTRA_DESCRIPTION);
-                        int priority = result.getData().getIntExtra(IntentExtras.EXTRA_PRIORITY, 1);
+                        if (result.getData().getIntExtra(IntentExtras.EXTRA_ID, -1) == -1) {
+                            String title = result.getData().getStringExtra(IntentExtras.EXTRA_TITLE);
+                            String description = result.getData().getStringExtra(IntentExtras.EXTRA_DESCRIPTION);
+                            int priority = result.getData().getIntExtra(IntentExtras.EXTRA_PRIORITY, 1);
+                            NoteObject noteObject = new NoteObject(title, description, priority);
+                            noteViewModel.insert(noteObject);
 
-                        NoteObject noteObject = new NoteObject(title, description, priority);
-                        noteViewModel.insert(noteObject);
+                            Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show();
+                        } else {
+                            int id = result.getData().getIntExtra(IntentExtras.EXTRA_ID, -1);
+                            if (id == -1) {
+                                Toast.makeText(this, "Note can't be updated", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            String title = result.getData().getStringExtra(IntentExtras.EXTRA_TITLE);
+                            String description = result.getData().getStringExtra(IntentExtras.EXTRA_DESCRIPTION);
+                            int priority = result.getData().getIntExtra(IntentExtras.EXTRA_PRIORITY, 1);
+                            NoteObject noteObject = new NoteObject(title, description, priority);
+                            noteObject.setId(id);
+                            noteViewModel.update(noteObject);
 
-                        Toast.makeText(this, "Note saved", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this, "Note updated", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
                         Toast.makeText(this, "Note not saved", Toast.LENGTH_SHORT).show();
                     }
@@ -91,13 +105,22 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new NoteAdapter();
         recyclerView.setAdapter(adapter);
+
+        adapter.setOnClickListener(noteObject -> {
+            Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
+            intent.putExtra(IntentExtras.EXTRA_ID, noteObject.getId());
+            intent.putExtra(IntentExtras.EXTRA_TITLE, noteObject.getTitle());
+            intent.putExtra(IntentExtras.EXTRA_DESCRIPTION, noteObject.getDescription());
+            intent.putExtra(IntentExtras.EXTRA_PRIORITY, noteObject.getPriority());
+            intentActivityResultLauncher.launch(intent);
+        });
     }
 
     private final View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (v == addNote) {
-                Intent intent = new Intent(MainActivity.this, AddNoteActivity.class);
+                Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
                 intentActivityResultLauncher.launch(intent);
             }
         }

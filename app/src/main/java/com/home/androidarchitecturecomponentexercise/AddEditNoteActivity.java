@@ -2,7 +2,7 @@ package com.home.androidarchitecturecomponentexercise;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -13,7 +13,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class AddNoteActivity extends AppCompatActivity {
+public class AddEditNoteActivity extends AppCompatActivity {
+
+    private static final String TAG = "AddEditNoteActivity";
 
     private EditText editTextTitle;
     private EditText editTextDescription;
@@ -29,8 +31,18 @@ public class AddNoteActivity extends AppCompatActivity {
         numberPickerPriority.setMinValue(1);
         numberPickerPriority.setMaxValue(10);
 
+        Intent intent = getIntent();
+        if (intent.hasExtra(IntentExtras.EXTRA_ID)) {
+            setTitle("Edit Note");
+            editTextTitle.setText(intent.getStringExtra(IntentExtras.EXTRA_TITLE));
+            editTextDescription.setText(intent.getStringExtra(IntentExtras.EXTRA_DESCRIPTION));
+            numberPickerPriority.setValue(intent.getIntExtra(IntentExtras.EXTRA_PRIORITY, 1));
+        } else {
+            setTitle("Add Note");
+        }
+
+
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_baseline_close);
-        setTitle("Add Note");
     }
 
     private void saveNote() {
@@ -46,6 +58,11 @@ public class AddNoteActivity extends AppCompatActivity {
         data.putExtra(IntentExtras.EXTRA_TITLE, title);
         data.putExtra(IntentExtras.EXTRA_DESCRIPTION, description);
         data.putExtra(IntentExtras.EXTRA_PRIORITY, priority);
+
+        int id = getIntent().getIntExtra(IntentExtras.EXTRA_ID, -1);
+        if (id != -1) {
+            data.putExtra(IntentExtras.EXTRA_ID, id);
+        }
 
         setResult(RESULT_OK, data);
         finish();
