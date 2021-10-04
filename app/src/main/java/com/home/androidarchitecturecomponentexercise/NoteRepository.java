@@ -1,7 +1,6 @@
 package com.home.androidarchitecturecomponentexercise;
 
 import android.app.Application;
-import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
 
@@ -19,83 +18,64 @@ public class NoteRepository {
     }
 
     public void insert(NoteObject note) {
-        new InsertNoteAsyncTask(noteDao).execute(note);
+        NoteOperationRunnable noteOperationRunnable = new NoteOperationRunnable(noteDao, note, "insert");
+        new Thread(noteOperationRunnable).start();
     }
 
     public void update(NoteObject note) {
-        new UpdateNoteAsyncTask(noteDao).execute(note);
+        NoteOperationRunnable noteOperationRunnable = new NoteOperationRunnable(noteDao, note, "update");
+        new Thread(noteOperationRunnable).start();
     }
 
     public void delete(NoteObject note) {
-        new DeleteNoteAsyncTask(noteDao).execute(note);
+        NoteOperationRunnable noteOperationRunnable = new NoteOperationRunnable(noteDao, note, "delete");
+        new Thread(noteOperationRunnable).start();
     }
 
     public void deleteAllNotes() {
-        new DeleteAllNotesAsyncTask(noteDao).execute();
+        NoteOperationRunnable noteOperationRunnable = new NoteOperationRunnable(noteDao, "deleteAll");
+        new Thread(noteOperationRunnable).start();
     }
 
     public LiveData<List<NoteObject>> getAllNotes() {
         return allNotes;
     }
 
-    private static class InsertNoteAsyncTask extends AsyncTask<NoteObject, Void, Void> {
+
+    private static class NoteOperationRunnable implements Runnable {
 
         private final NoteDao noteDao;
+        private final NoteObject noteObject;
+        private final String operation;
 
-        private InsertNoteAsyncTask(NoteDao noteDao) {
+        NoteOperationRunnable(NoteDao noteDao, NoteObject noteObject, String operation) {
             this.noteDao = noteDao;
+            this.noteObject = noteObject;
+            this.operation = operation;
+        }
+
+        NoteOperationRunnable(NoteDao noteDao, String operation) {
+            this.noteDao = noteDao;
+            this.operation = operation;
+            noteObject = null;
         }
 
         @Override
-        protected Void doInBackground(NoteObject... noteObjects) {
-            noteDao.insert(noteObjects[0]);
-            return null;
+        public void run() {
+            switch (operation) {
+                case "insert":
+                    noteDao.insert(noteObject);
+                    break;
+                case "update":
+                    noteDao.update(noteObject);
+                    break;
+                case "delete":
+                    noteDao.delete(noteObject);
+                    break;
+                case "deleteAll":
+                    noteDao.deleteAllNotes();
+                    break;
+            }
         }
     }
-
-    private static class UpdateNoteAsyncTask extends AsyncTask<NoteObject, Void, Void> {
-
-        private final NoteDao noteDao;
-
-        private UpdateNoteAsyncTask(NoteDao noteDao) {
-            this.noteDao = noteDao;
-        }
-
-        @Override
-        protected Void doInBackground(NoteObject... noteObjects) {
-            noteDao.update(noteObjects[0]);
-            return null;
-        }
-    }
-
-    private static class DeleteNoteAsyncTask extends AsyncTask<NoteObject, Void, Void> {
-
-        private final NoteDao noteDao;
-
-        private DeleteNoteAsyncTask(NoteDao noteDao) {
-            this.noteDao = noteDao;
-        }
-
-        @Override
-        protected Void doInBackground(NoteObject... noteObjects) {
-            noteDao.delete(noteObjects[0]);
-            return null;
-        }
-    }
-
-    private static class DeleteAllNotesAsyncTask extends AsyncTask<NoteObject, Void, Void> {
-
-        private final NoteDao noteDao;
-
-        private DeleteAllNotesAsyncTask(NoteDao noteDao) {
-            this.noteDao = noteDao;
-        }
-
-        @Override
-        protected Void doInBackground(NoteObject... noteObjects) {
-            noteDao.deleteAllNotes();
-            return null;
-        }
-    }
-
 }
